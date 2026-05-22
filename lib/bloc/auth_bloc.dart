@@ -6,36 +6,40 @@ part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc() : super(AuthInitial()) {
-    on<AuthSignUp>((event, emit) async {
-      try {
-        if (event.email.isEmpty) {
-          emit(AuthFailure(errMessage: 'Please enter email'));
-          return;
-        }
+    on<AuthSignUp>(onAuthsignup);
 
-        if (event.password.length < 6) {
-          emit(AuthFailure(errMessage: 'Password Should be length of 6'));
-          return;
-        }
-        emit(AuthLoading());
-        await Future.delayed(Duration(seconds: 1));
+    on<AuthSignOut>(onAuthSignout);
+  }
 
-        emit(AuthSuccess(uid: 'Hi, ${event.email} -${event.password} '));
-      } catch (e) {
-        emit(AuthFailure(errMessage: e.toString()));
+  void onAuthsignup(AuthSignUp event, Emitter<AuthState> emit) async {
+    try {
+      if (event.email.isEmpty) {
+        emit(AuthFailure(errMessage: 'Please enter email'));
+        return;
       }
-    });
 
-    on<AuthSignOut>((event, emit) async {
+      if (event.password.length < 6) {
+        emit(AuthFailure(errMessage: 'Password Should be length of 6'));
+        return;
+      }
       emit(AuthLoading());
+      await Future.delayed(Duration(seconds: 1));
 
-      try {
-        await Future.delayed(Duration(seconds: 2));
+      emit(AuthSuccess(uid: 'Hi, ${event.email} -${event.password} '));
+    } catch (e) {
+      emit(AuthFailure(errMessage: e.toString()));
+    }
+  }
 
-        emit(AuthInitial());
-      } catch (e) {
-        emit(AuthFailure(errMessage: e.toString()));
-      }
-    });
+  void onAuthSignout(AuthSignOut event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+
+    try {
+      await Future.delayed(Duration(seconds: 2));
+
+      emit(AuthInitial());
+    } catch (e) {
+      emit(AuthFailure(errMessage: e.toString()));
+    }
   }
 }
